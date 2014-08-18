@@ -1,0 +1,10 @@
+[Unit]
+Description=Auto Suspend on Low Battery
+After=syslog.target
+
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/battery-auto-suspend
+
+[Install]
+WantedBy=multi-user.target

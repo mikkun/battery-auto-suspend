@@ -1,0 +1,31 @@
+#!/bin/bash -e
+
+ACTION='suspend'
+BATTERY_LOW=10
+INTERVAL_SEC=60
+
+[ -f /etc/battery-auto-suspend.conf ] && . /etc/battery-auto-suspend.conf
+ACTION=$(echo $ACTION | tr 'A-Z' 'a-z')
+
+[ "_$ACTION" = '_suspend'      -o               \
+  "_$ACTION" = '_hibernate'    -o               \
+  "_$ACTION" = '_hybrid-sleep' ]                || exit 1
+[ $BATTERY_LOW  -gt 0 -a $BATTERY_LOW -lt 100 ] || exit 1
+[ $INTERVAL_SEC -gt 0 ]                         || exit 1
+
+battery=$(ls /sys/class/power_supply | sed '/^AC/d' | head -n 1)
+[ "_$battery" = '_' ] && exit 1
+
+while : ; do
+    status=$(cat "/sys/class/power_supply/${battery}/status")
+    capacity=$(cat "/sys/class/power_supply/${battery}/capacity")
+
+    if [ "_$status" = '_Discharging' -a $capacity -lt $BATTERY_LOW ] ; then
+        /bin/systemctl $ACTION
+        break
+    fi
+
+    sleep $INTERVAL_SEC
+done
+
+exit 0
