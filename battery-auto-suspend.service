@@ -5,6 +5,7 @@ After=syslog.target
 [Service]
 Type=simple
 ExecStart=/usr/local/bin/battery-auto-suspend
+Restart=on-success
 
 [Install]
 WantedBy=multi-user.target
